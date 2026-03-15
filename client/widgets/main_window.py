@@ -4,9 +4,18 @@
 Объединяет авторизацию, панель админа и панель пользователя.
 """
 from PyQt5.QtWidgets import (
-    QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QLabel, QPushButton, QStackedWidget, QFrame,
-    QStatusBar, QMessageBox, QSpacerItem, QSizePolicy
+    QMainWindow,
+    QWidget,
+    QVBoxLayout,
+    QHBoxLayout,
+    QLabel,
+    QPushButton,
+    QStackedWidget,
+    QFrame,
+    QStatusBar,
+    QMessageBox,
+    QSpacerItem,
+    QSizePolicy,
 )
 from PyQt5.QtCore import Qt, QTimer
 
@@ -23,10 +32,13 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.api_client = ApiClient(server_url)
         self._setup_ui()
-        self._show_login()
+        # Показываем окно входа после отображения главного окна
+        QTimer.singleShot(100, self._show_login)
 
     def _setup_ui(self):
-        self.setWindowTitle("🛸 Alien Signal Classifier — Классификация инопланетных радиосигналов")
+        self.setWindowTitle(
+            "🛸 Alien Signal Classifier — Классификация инопланетных радиосигналов"
+        )
         self.setMinimumSize(1200, 750)
         self.resize(1400, 850)
 
@@ -41,12 +53,14 @@ class MainWindow(QMainWindow):
         # Верхняя панель
         self.top_bar = QFrame()
         self.top_bar.setFixedHeight(55)
-        self.top_bar.setStyleSheet("""
+        self.top_bar.setStyleSheet(
+            """
             QFrame {
                 background-color: #0d1117;
                 border-bottom: 2px solid #0f3460;
             }
-        """)
+        """
+        )
 
         top_layout = QHBoxLayout(self.top_bar)
         top_layout.setContentsMargins(15, 0, 15, 0)
@@ -118,9 +132,9 @@ class MainWindow(QMainWindow):
             self._show_login()
             return
 
-        first_name = user.get('first_name', '')
-        last_name = user.get('last_name', '')
-        role = user.get('role', '')
+        first_name = user.get("first_name", "")
+        last_name = user.get("last_name", "")
+        role = user.get("role", "")
 
         # Обновляем верхнюю панель
         self.user_info_label.setText(f"{first_name} {last_name}")
@@ -142,7 +156,7 @@ class MainWindow(QMainWindow):
         self.top_bar.show()
 
         # Создаём панель в зависимости от роли
-        if role == 'admin':
+        if role == "admin":
             panel = AdminPanel(self.api_client)
             self.status_bar.showMessage("Режим администратора")
         else:
@@ -156,10 +170,11 @@ class MainWindow(QMainWindow):
     def _on_logout(self):
         """Выход из системы"""
         reply = QMessageBox.question(
-            self, "Подтверждение выхода",
+            self,
+            "Подтверждение выхода",
             "Вы уверены, что хотите выйти?",
             QMessageBox.Yes | QMessageBox.No,
-            QMessageBox.No
+            QMessageBox.No,
         )
 
         if reply == QMessageBox.Yes:

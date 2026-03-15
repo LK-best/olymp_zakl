@@ -18,7 +18,6 @@ from client.widgets.main_window import MainWindow
 
 
 def main():
-    # Настройки High-DPI для 4K мониторов
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
     QApplication.setAttribute(Qt.AA_UseHighDpiPixmaps, True)
 
