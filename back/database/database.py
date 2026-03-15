@@ -1,8 +1,8 @@
 import sqlite3
 import os
 
-DB_NAME = "database.db"
-SCHEMA_FILE = "database.sql"
+DB_NAME = "back//database//database.db"
+SCHEMA_FILE = "back//database//database.sql"
 
 
 class Database:
@@ -218,7 +218,7 @@ class Database:
         return dict(row) if row else None
 
     # Дамп БД
-    def dump_to_sql(self, output_file: str = "dump.sql"):
+    def dump_to_sql(self, output_file: str = "back//database//dump.sql"):
         conn = self.connect()
         with open(output_file, 'w', encoding='utf-8') as f:
             for line in conn.iterdump():
