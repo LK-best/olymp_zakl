@@ -1,5 +1,9 @@
 import sys
 import os
+
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, PROJECT_ROOT)
+
 import numpy as np
 from PyQt6.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QTabWidget, QLineEdit,
@@ -16,8 +20,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar
 
-from database import Database
-
+from back.database.database import Database
 
 db = Database()
 
@@ -154,7 +157,7 @@ class RegistrationWidget(QWidget):
             self.clear_fields()
             self.app_controller.show_login()
         else:
-            QMessageBox.warning(self, "Ошибка", "Пользователь с таким логином уже существует!")
+            QMessageBox.warning(self, "Ошибка", "Такой логин уже существует!")
 
     def clear_fields(self):
         self.fname_input.clear()
@@ -175,7 +178,9 @@ class AdminWidget(QWidget):
         layout = QVBoxLayout()
 
         header = QHBoxLayout()
-        title = QLabel(f"Панель администратора — {self.user_data['first_name']} {self.user_data['last_name']}")
+        title = QLabel(
+            f"Админ: {self.user_data['first_name']} {self.user_data['last_name']}"
+        )
         title.setFont(QFont("Arial", 14, QFont.Weight.Bold))
         btn_logout = QPushButton("Выйти")
         btn_logout.setMaximumWidth(120)
@@ -255,8 +260,12 @@ class AdminWidget(QWidget):
 
         self.users_table = QTableWidget()
         self.users_table.setColumnCount(5)
-        self.users_table.setHorizontalHeaderLabels(["ID", "Логин", "Роль", "Имя", "Фамилия"])
-        self.users_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.users_table.setHorizontalHeaderLabels(
+            ["ID", "Логин", "Роль", "Имя", "Фамилия"]
+        )
+        self.users_table.horizontalHeader().setSectionResizeMode(
+            QHeaderView.ResizeMode.Stretch
+        )
         self.users_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
 
         layout.addWidget(btn_refresh)
@@ -285,8 +294,12 @@ class AdminWidget(QWidget):
 
         self.sessions_table = QTableWidget()
         self.sessions_table.setColumnCount(4)
-        self.sessions_table.setHorizontalHeaderLabels(["Логин", "Имя", "Фамилия", "Время входа"])
-        self.sessions_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.sessions_table.setHorizontalHeaderLabels(
+            ["Логин", "Имя", "Фамилия", "Время входа"]
+        )
+        self.sessions_table.horizontalHeader().setSectionResizeMode(
+            QHeaderView.ResizeMode.Stretch
+        )
         self.sessions_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
 
         layout.addWidget(btn_refresh)
@@ -312,13 +325,16 @@ class UserWidget(QWidget):
         self.app_controller = app_controller
         self.user_data = user_data
         self.dataset_id = None
+        self.selected_file = None
         self.setup_ui()
 
     def setup_ui(self):
         layout = QVBoxLayout()
 
         header = QHBoxLayout()
-        title = QLabel(f"Пользователь: {self.user_data['first_name']} {self.user_data['last_name']}")
+        title = QLabel(
+            f"Пользователь: {self.user_data['first_name']} {self.user_data['last_name']}"
+        )
         title.setFont(QFont("Arial", 14, QFont.Weight.Bold))
         btn_logout = QPushButton("Выйти")
         btn_logout.setMaximumWidth(120)
@@ -342,10 +358,10 @@ class UserWidget(QWidget):
 
         info_group = QGroupBox("Информация о пользователе")
         info_layout = QFormLayout()
+        info_layout.addRow("ID:", QLabel(str(self.user_data["id"])))
         info_layout.addRow("Имя:", QLabel(self.user_data["first_name"]))
         info_layout.addRow("Фамилия:", QLabel(self.user_data["last_name"]))
         info_layout.addRow("Роль:", QLabel(self.user_data["role"]))
-        info_layout.addRow("ID:", QLabel(str(self.user_data["id"])))
         info_group.setLayout(info_layout)
 
         sessions_group = QGroupBox("Мои последние входы")
@@ -353,7 +369,9 @@ class UserWidget(QWidget):
         self.my_sessions_table = QTableWidget()
         self.my_sessions_table.setColumnCount(2)
         self.my_sessions_table.setHorizontalHeaderLabels(["Логин", "Время входа"])
-        self.my_sessions_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.my_sessions_table.horizontalHeader().setSectionResizeMode(
+            QHeaderView.ResizeMode.Stretch
+        )
         self.my_sessions_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         sessions_layout.addWidget(self.my_sessions_table)
         sessions_group.setLayout(sessions_layout)
@@ -416,7 +434,9 @@ class UserWidget(QWidget):
         self.pred_table.setHorizontalHeaderLabels(
             ["Запись", "Истинный класс", "Предсказание", "Уверенность", "Верно"]
         )
-        self.pred_table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.pred_table.horizontalHeader().setSectionResizeMode(
+            QHeaderView.ResizeMode.Stretch
+        )
         self.pred_table.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
         pred_layout.addWidget(self.pred_table)
         predictions_group.setLayout(pred_layout)
@@ -437,6 +457,9 @@ class UserWidget(QWidget):
             self.btn_process.setEnabled(True)
 
     def process_dataset(self):
+        if not self.selected_file:
+            return
+
         try:
             data = np.load(self.selected_file, allow_pickle=True)
             keys = data.files
@@ -444,21 +467,25 @@ class UserWidget(QWidget):
             test_x_key = None
             test_y_key = None
             for k in keys:
-                if 'x' in k.lower():
+                arr = data[k]
+                if arr.dtype.kind == 'f' or (arr.ndim > 1):
                     test_x_key = k
-                if 'y' in k.lower():
+                elif arr.dtype.kind in ('U', 'S', 'i'):
                     test_y_key = k
 
             if not test_x_key:
-                QMessageBox.warning(self, "Ошибка", f"Не найден массив с данными. Ключи: {keys}")
+                QMessageBox.warning(
+                    self, "Ошибка",
+                    f"Не найден массив аудиоданных.\nКлючи в файле: {keys}"
+                )
                 return
 
             test_x = data[test_x_key]
             total_records = test_x.shape[0]
 
+            true_classes = []
             if test_y_key:
                 test_y = data[test_y_key]
-                true_classes = []
                 for label in test_y:
                     try:
                         true_classes.append(int(label))
@@ -467,16 +494,21 @@ class UserWidget(QWidget):
             else:
                 true_classes = [0] * total_records
 
-            # Заглушка: тут должно быть предсказание модели
+            # TODO: заменить заглушку на реальную модель
             # predicted = model.predict(test_x)
             predicted_classes = []
             confidences = []
             for i in range(total_records):
-                pred = true_classes[i] if np.random.random() > 0.15 else np.random.randint(0, 10)
+                if np.random.random() > 0.15:
+                    pred = true_classes[i]
+                else:
+                    pred = np.random.randint(0, 10)
                 predicted_classes.append(pred)
                 confidences.append(round(np.random.uniform(0.5, 1.0), 3))
 
-            correct = sum(1 for t, p in zip(true_classes, predicted_classes) if t == p)
+            correct = sum(
+                1 for t, p in zip(true_classes, predicted_classes) if t == p
+            )
             accuracy = round(correct / total_records * 100, 2)
             loss = round(np.random.uniform(0.1, 0.5), 4)
 
@@ -508,16 +540,28 @@ class UserWidget(QWidget):
             for i, pred in enumerate(predictions):
                 is_ok = "✅" if pred["true_class"] == pred["predicted_class"] else "❌"
                 self.pred_table.setItem(i, 0, QTableWidgetItem(str(i)))
-                self.pred_table.setItem(i, 1, QTableWidgetItem(str(pred["true_class"])))
-                self.pred_table.setItem(i, 2, QTableWidgetItem(str(pred["predicted_class"])))
-                self.pred_table.setItem(i, 3, QTableWidgetItem(str(pred["confidence"])))
+                self.pred_table.setItem(
+                    i, 1, QTableWidgetItem(str(pred["true_class"]))
+                )
+                self.pred_table.setItem(
+                    i, 2, QTableWidgetItem(str(pred["predicted_class"]))
+                )
+                self.pred_table.setItem(
+                    i, 3, QTableWidgetItem(str(pred["confidence"]))
+                )
                 self.pred_table.setItem(i, 4, QTableWidgetItem(is_ok))
 
-            self.update_charts(predictions)
-            QMessageBox.information(self, "Готово", f"Обработано {total_records} записей\nТочность: {accuracy}%")
+            self.update_test_chart(predictions)
+
+            QMessageBox.information(
+                self, "Готово",
+                f"Обработано {total_records} записей\nТочность: {accuracy}%"
+            )
 
         except Exception as e:
-            QMessageBox.critical(self, "Ошибка", f"Не удалось обработать файл:\n{str(e)}")
+            QMessageBox.critical(
+                self, "Ошибка", f"Не удалось обработать файл:\n{str(e)}"
+            )
 
     def analytics_tab(self):
         tab = QWidget()
@@ -555,7 +599,10 @@ class UserWidget(QWidget):
             ax1.plot(epochs, train_acc, 'g--', label="Обучение", alpha=0.7)
             ax1.legend()
         else:
-            ax1.text(0.5, 0.5, "Нет данных", ha='center', va='center', transform=ax1.transAxes)
+            ax1.text(
+                0.5, 0.5, "Нет данных обучения",
+                ha='center', va='center', transform=ax1.transAxes
+            )
         ax1.set_title("Точность от эпох обучения")
         ax1.set_xlabel("Эпоха")
         ax1.set_ylabel("Точность")
@@ -568,13 +615,19 @@ class UserWidget(QWidget):
             colors = plt.cm.tab10(np.linspace(0, 1, len(classes)))
             ax2.bar(classes, counts, color=colors)
         else:
-            ax2.text(0.5, 0.5, "Нет данных", ha='center', va='center', transform=ax2.transAxes)
+            ax2.text(
+                0.5, 0.5, "Нет данных",
+                ha='center', va='center', transform=ax2.transAxes
+            )
         ax2.set_title("Записи по цивилизациям (train)")
-        ax2.set_xlabel("Класс (цивилизация)")
+        ax2.set_xlabel("Класс")
         ax2.set_ylabel("Количество")
 
         ax3 = self.axs[1, 0]
-        ax3.text(0.5, 0.5, "Загрузите тестовый набор", ha='center', va='center', transform=ax3.transAxes)
+        ax3.text(
+            0.5, 0.5, "Загрузите тестовый набор",
+            ha='center', va='center', transform=ax3.transAxes
+        )
         ax3.set_title("Точность каждой записи (тест)")
 
         ax4 = self.axs[1, 1]
@@ -584,19 +637,25 @@ class UserWidget(QWidget):
             sizes = [d["record_count"] for d in top5]
             ax4.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=90)
         else:
-            ax4.text(0.5, 0.5, "Нет данных", ha='center', va='center', transform=ax4.transAxes)
+            ax4.text(
+                0.5, 0.5, "Нет данных",
+                ha='center', va='center', transform=ax4.transAxes
+            )
         ax4.set_title("Топ-5 классов (валидация)")
 
         self.figure.tight_layout()
         self.canvas.draw()
 
-    def update_charts(self, predictions):
+    def update_test_chart(self, predictions):
         ax3 = self.axs[1, 0]
         ax3.clear()
 
         indices = [p["record_index"] for p in predictions]
         confs = [p["confidence"] for p in predictions]
-        colors = ["green" if p["true_class"] == p["predicted_class"] else "red" for p in predictions]
+        colors = [
+            "green" if p["true_class"] == p["predicted_class"] else "red"
+            for p in predictions
+        ]
 
         ax3.bar(indices, confs, color=colors, width=1.0)
         ax3.set_title("Точность каждой записи (тест)")
@@ -611,6 +670,9 @@ class UserWidget(QWidget):
 class AppController(QWidget):
     def __init__(self):
         super().__init__()
+        self.setWindowTitle(
+            "Alien Signal Classifier — Классификация инопланетных сигналов"
+        )
         self.resize(1100, 750)
         self.setMinimumSize(800, 600)
 
