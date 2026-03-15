@@ -9,10 +9,10 @@ import sys
 from flask import Flask, jsonify
 from flask_cors import CORS
 
-from server.config import Config
-from server.routes import api
-from server.init_db import init_database
-from server import database as db
+from config import Config
+from routes import api
+from init_db import init_database
+import database as db
 
 
 def create_app() -> Flask:

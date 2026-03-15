@@ -8,8 +8,8 @@ import uuid
 from functools import wraps
 from flask import request, jsonify, g
 
-from server.config import Config
-from server import database as db
+from config import Config
+import database as db
 
 
 def generate_token(user_id: int, role: str) -> str:

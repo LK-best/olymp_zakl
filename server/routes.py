@@ -6,14 +6,14 @@ import os
 import uuid
 from flask import Blueprint, request, jsonify, g
 
-from server.config import Config
-from server.auth import (
+from config import Config
+from auth import (
     login_required, admin_required, user_required,
     login_user, logout_user
 )
-from server import database as db
-from server import model_service
-from server import analytics
+import database as db
+import model_service
+import analytics
 
 api = Blueprint('api', __name__, url_prefix='/api')
 

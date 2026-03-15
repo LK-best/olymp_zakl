@@ -11,7 +11,7 @@ import os
 from typing import Optional, List, Dict, Any, Tuple
 from contextlib import contextmanager
 
-from server.config import Config
+from config import Config
 
 
 # ============================================================

@@ -9,7 +9,7 @@ import os
 import io
 from typing import Dict, List, Optional, Tuple
 
-from server.config import Config
+from config import Config
 
 # Ленивая загрузка TensorFlow (тяжёлый импорт)
 _model = None

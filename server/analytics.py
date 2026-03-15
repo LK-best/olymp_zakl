@@ -7,8 +7,8 @@ import os
 import numpy as np
 from typing import Dict, List, Optional
 
-from server.config import Config
-from server import model_service
+from config import Config
+import model_service
 
 
 def get_accuracy_vs_epochs() -> Dict:
